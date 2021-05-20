@@ -43,16 +43,12 @@ wdistance([Head|Tail], [Head2|TaiList2], [Headw|Tailw], Result) :-
 % 3.3 
 find_possible_cities(Name, CityList) :-
     city(X, List, _),
-    init(Name, List, Result),
-    (Result = true) -> Temp = X,
+    (member(Name, List)) -> Temp = X,
     likes(Name, _, Y),
     [Temp|Y] = CityList.
     
 
-init(Name, [], false).
-init(Name, [Head|Tail], Result):-
-    (Head = Name) -> Result = true, !;
-    init(Name, Tail, Result).
+
 
 
 % 3.4
@@ -66,7 +62,7 @@ concatenate(List1, List1, List1).
 concatenate([], List, List).
 concatenate([H1|T1], List2, [H1|TailResult]) :-
     concatenate(T1, List2, TailResult).
-
+%3.5
 find_mutual_activities(Name1, Name2, MutualActivities):-
     likes(Name1, X, _),
     likes(Name2, Y, _),
@@ -98,8 +94,7 @@ find_possible_target(Name, Distances, TargetList, [HeadNames|TailNames]) :-
     expects(Name, X, _),
     %findall(Y, glanian(Y, T, _), Names),
     glanian(HeadNames, T, _),
-    init(T, X, Result),
-    ((Result = true) -> glanian_distance(Name, HeadNames, Distance), find_possible_target(Name, TailD, TargetT, TailNames), HeadD = Distance-HeadNames);
+    ((member(T,X)) -> glanian_distance(Name, HeadNames, Distance), find_possible_target(Name, TailD, TargetT, TailNames), HeadD = Distance-HeadNames);
     find_possible_target(Name, Distances, TargetList, TailNames).
     
 
@@ -130,11 +125,77 @@ find_wpossible_target(Name, Distances, TargetList, [HeadNames|TailNames]) :-
     expects(Name, X, _),
     %findall(Y, glanian(Y, T, _), Names),
     glanian(HeadNames, T, _),
-    init(T, X, Result),
-    ((Result = true) -> weighted_glanian_distance(Name, HeadNames, Distance), find_wpossible_target(Name, TailD, TargetT, TailNames), HeadD = Distance-HeadNames);
+    ((member(T,X)) -> weighted_glanian_distance(Name, HeadNames, Distance), find_wpossible_target(Name, TailD, TargetT, TailNames), HeadD = Distance-HeadNames);
     find_wpossible_target(Name, Distances, TargetList, TailNames).
     
 
-% 3.8 find_my_best_target(Name, Distances, Activities, Cities, Targets) 20 points
+% 3.8
+find_my_best_target(Name, Distances, Activities, Cities, Targets) :-
+    find_weighted_targets(Name, Distance, Target),
+    merge_possible_cities(Name, H_Target, Cities).
+
+
+
+
+    
+
+
+
+
+    
+    
+    
+    
+    find_activities(Name, [], []).
+find_activities(Name, [Hc|Tc], [H|T]):-
+    find_activities(Name, Tc, T),
+    findall(-Activity, isCompatible(Name, X, Activity), ActivityList),
+    H = ActivityList. 
+    %match_activities(Hc, ActivityList, Fucksake),
+    %concatenate(Fucksake, List, New).
+
+
+listSplitter(List, R1, R2, R3, R4):-
+    divide_dashed_list(List, Temp1, R4),
+    divide_dashed_list(Temp1, Temp2, R3),
+    divide_dashed_list(Temp2, R1, R2).
+
+
+
+
+
+
+
+bismillah(Name, Target, Distance, City, Activity):-
+find_weighted_targets(Name, Distances, TargetList),
+member(Distance, Distances),
+findall(X, old_relation(X), List),
+member(Target, TargetList),
+not(member([Name, Target], List)),
+isCompatible(Name, City, Activity),
+merge_possible_cities(Name, Target, CityList),
+member(City, CityList).
+
+
+
+
+
+
+
+
+
+
+isCompatible(Name, City, Activity):-
+find_possible_cities(Name, Cities),
+dislikes(Name, DActivites, DCities, _),
+likes(Name, LActivities, _),
+city(City, _, Activities),
+((member(City, Cities), member(Activity, Activities), 
+not(member(Activity, DActivites)));
+(member(Activity, LActivities), member(Activity, Activities), not(member(City, DCities))) ).
+
+
+
+
 
 % 3.9 find_my_best_match(Name, Distances, Activities, Cities, Targets) 25 points
